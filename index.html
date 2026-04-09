@@ -3,116 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>RAJ MODS | HATKE v16.0</title>
+    <title>RAJ MODS | HATKE v16.1</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --accent: #ff4d4d; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
-        
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        
-        html, body { 
-            background: var(--bg); color: #fff; font-family: 'SF Pro Display', -apple-system, sans-serif; 
-            height: 100%; width: 100%; overflow: hidden; position: fixed; overscroll-behavior: none;
-        }
-
+        html, body { background: var(--bg); color: #fff; font-family: 'SF Pro Display', -apple-system, sans-serif; height: 100%; width: 100%; overflow: hidden; position: fixed; overscroll-behavior: none; }
         svg { display: block; } 
 
         /* --- LOBBY SCREEN --- */
-        #lobby-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1a0a0a 0%, #050505 100%);
-            display: flex; justify-content: center; align-items: center; z-index: 2000;
-        }
-        .lobby-box {
-            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px);
-            padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);
-            text-align: center; width: 85%; max-width: 380px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-        }
+        #lobby-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1a0a0a 0%, #050505 100%); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        .lobby-box { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); text-align: center; width: 85%; max-width: 380px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         .lobby-box h2 { color: var(--accent); letter-spacing: 3px; margin-bottom: 5px; text-transform: uppercase; }
-        
-        .lobby-id-box {
-            background: #111; border: 1px dashed #444; border-radius: 10px;
-            padding: 12px; margin-bottom: 20px; font-size: 0.85rem; color: #aaa;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .lobby-id-box { background: #111; border: 1px dashed #444; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 0.85rem; color: #aaa; display: flex; justify-content: space-between; align-items: center; }
         .copy-btn { background: var(--accent); color: #000; border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .copy-btn:active { transform: scale(0.9); }
-
-        .lobby-input { 
-            width: 100%; padding: 14px; background: rgba(0,0,0,0.4); 
-            border: 2px solid #333; border-radius: 12px; color: #fff; 
-            font-size: 15px; outline: none; margin-bottom: 12px; text-align: center;
-        }
+        .lobby-input { width: 100%; padding: 14px; background: rgba(0,0,0,0.4); border: 2px solid #333; border-radius: 12px; color: #fff; font-size: 15px; outline: none; margin-bottom: 12px; text-align: center; }
         .lobby-input:focus { border-color: var(--accent); }
-        .lobby-btn { 
-            width: 100%; padding: 16px; background: var(--accent); margin-top: 10px;
-            border: none; border-radius: 12px; color: #000; 
-            font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem;
-        }
+        .lobby-btn { width: 100%; padding: 16px; background: var(--accent); margin-top: 10px; border: none; border-radius: 12px; color: #000; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem; }
 
         /* --- CHAT INTERFACE --- */
-        #chat-screen { 
-            display: none; height: 100%; width: 100%;
-            flex-direction: column; position: absolute; top: 0; left: 0;
-        }
-        
-        header { 
-            padding: 15px; border-bottom: 1px solid #1a1a1a;
-            background: rgba(10,10,10,0.9); font-weight: bold; color: var(--accent);
-            letter-spacing: 1.5px; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
-        }
+        #chat-screen { display: none; height: 100%; width: 100%; flex-direction: column; position: absolute; top: 0; left: 0; }
+        header { padding: 15px; border-bottom: 1px solid #1a1a1a; background: rgba(10,10,10,0.9); font-weight: bold; color: var(--accent); letter-spacing: 1.5px; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
         .video-call-icon { cursor: pointer; display: none; padding: 8px; background: #222; border-radius: 50%; color: #fff; }
+        .video-call-icon:active { transform: scale(0.9); background: var(--accent); color: #000; }
 
-        #chat-box { 
-            flex: 1; overflow-y: auto; padding: 20px; 
-            display: flex; flex-direction: column; gap: 15px; background: #08080a;
-            user-select: none; -webkit-user-select: none; touch-action: pan-y;
-        }
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #08080a; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
         #chat-box::-webkit-scrollbar { width: 4px; }
         #chat-box::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
-        /* Call Log Style */
-        .call-log-msg {
-            align-self: center; background: rgba(255,255,255,0.08); border: 1px solid #333;
-            color: #ccc; font-size: 0.75rem; padding: 6px 12px; border-radius: 12px; 
-            margin: 5px 0; display: flex; align-items: center; gap: 5px; font-weight: bold;
-        }
-
+        .call-log-msg { align-self: center; background: rgba(255,255,255,0.08); border: 1px solid #333; color: #ccc; font-size: 0.75rem; padding: 6px 12px; border-radius: 12px; margin: 5px 0; display: flex; align-items: center; gap: 5px; font-weight: bold; }
         .msg-con { display: flex; flex-direction: column; max-width: 85%; position: relative; }
         .msg-con.me { align-self: flex-end; align-items: flex-end; }
         .msg-con.peer { align-self: flex-start; align-items: flex-start; }
-        
         .msg-bubble-wrapper { width: 100%; display: flex; position: relative; }
         .me .msg-bubble-wrapper { justify-content: flex-end; }
         .peer .msg-bubble-wrapper { justify-content: flex-start; }
 
-        .msg-bubble { 
-            padding: 10px 14px; border-radius: 18px; font-size: 0.95rem; 
-            word-wrap: break-word; position: relative;
-            will-change: transform; transition: transform 0.2s ease-out;
-        }
+        .msg-bubble { padding: 10px 14px; border-radius: 18px; font-size: 0.95rem; word-wrap: break-word; position: relative; will-change: transform; transition: transform 0.2s ease-out; }
         .me .msg-bubble { background: var(--accent); color: #000; border-bottom-right-radius: 2px; }
         .peer .msg-bubble { background: #1e1e22; color: #fff; border-bottom-left-radius: 2px; border: 1px solid #333; }
         
-        /* WhatsApp Style Image/Video Bubble */
         .msg-bubble.media-bubble { padding: 4px; background: transparent; border: none; }
-        .media-bubble img, .media-bubble video {
-            border-radius: 14px; max-width: 240px; display: block; object-fit: cover; max-height: 300px;
-        }
+        .media-bubble img, .media-bubble video { border-radius: 14px; max-width: 240px; display: block; object-fit: cover; max-height: 300px; }
         .msg-bubble audio { width: 220px; height: 45px; margin-top: 2px; outline: none; border-radius: 20px; }
 
-        .quoted-msg {
-            background: rgba(0,0,0,0.15); border-left: 3px solid #000;
-            padding: 5px 8px; border-radius: 6px; margin-bottom: 5px; font-size: 0.8rem; opacity: 0.8;
-        }
+        .quoted-msg { background: rgba(0,0,0,0.15); border-left: 3px solid #000; padding: 5px 8px; border-radius: 6px; margin-bottom: 5px; font-size: 0.8rem; opacity: 0.8; }
         .peer .quoted-msg { background: rgba(255,255,255,0.05); border-left-color: var(--accent); }
         .quoted-name { font-weight: bold; font-size: 0.75rem; margin-bottom: 2px; }
 
-        .reaction-badge {
-            position: absolute; bottom: -12px; font-size: 12px;
-            background: #222; border: 1px solid #444; border-radius: 12px; 
-            padding: 2px 6px; display: none; z-index: 5; align-items: center; justify-content: center; gap: 2px;
-        }
+        .reaction-badge { position: absolute; bottom: -12px; font-size: 12px; background: #222; border: 1px solid #444; border-radius: 12px; padding: 2px 6px; display: none; z-index: 5; align-items: center; justify-content: center; gap: 2px; }
         .me .reaction-badge { left: 10px; }
         .peer .reaction-badge { right: 10px; }
 
@@ -129,51 +69,21 @@
         @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
 
         /* Controls Area */
-        .controls-area { 
-            background: #0c0c0c; border-top: 1px solid #1a1a1a; 
-            padding: 10px 10px calc(10px + env(safe-area-inset-bottom)) 10px;
-            width: 100%; flex-shrink: 0; display: flex; gap: 10px; z-index: 10; align-items: center;
-        }
-        .attach-btn {
-            background: #222; color: #fff; border: 1px solid #333; width: 45px; height: 45px; border-radius: 50%;
-            cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0;
-        }
+        .controls-area { background: #0c0c0c; border-top: 1px solid #1a1a1a; padding: 10px 10px calc(10px + env(safe-area-inset-bottom)) 10px; width: 100%; flex-shrink: 0; display: flex; gap: 10px; z-index: 10; align-items: center; }
+        .attach-btn { background: #222; color: #fff; border: 1px solid #333; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0; }
         .attach-btn:active { transform: scale(0.9); }
-        .msg-input { 
-            flex: 1; background: #222; border: 1px solid #333; padding: 14px; 
-            color: #fff; border-radius: 24px; outline: none; font-size: 16px; 
-        }
+        .msg-input { flex: 1; background: #222; border: 1px solid #333; padding: 14px; color: #fff; border-radius: 24px; outline: none; font-size: 16px; }
         
-        /* Fixed Mic/Send Buttons */
-        .send-btn, .mic-btn { 
-            background: var(--accent); color: #000; border: none; width: 45px; height: 45px; 
-            border-radius: 50%; font-weight: bold; cursor: pointer; display: flex; 
-            justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0;
-            user-select: none; -webkit-user-select: none;
-        }
+        .send-btn, .mic-btn { background: var(--accent); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0; user-select: none; -webkit-user-select: none; }
         .send-btn:active { transform: scale(0.9); }
-        
-        .mic-btn.recording {
-            background: #ff4d4d; animation: pulse 1s infinite; transform: scale(1.1);
-        }
+        .mic-btn.recording { background: #ff4d4d; animation: pulse 1s infinite; transform: scale(1.1); }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 77, 77, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); } }
 
-        /* Reply Preview Box Above Input */
-        #reply-preview-box {
-            display: none; background: #1a1a1a; border-left: 3px solid var(--accent);
-            padding: 10px; font-size: 0.8rem; color: #ccc; border-radius: 8px 8px 0 0;
-            position: relative; justify-content: space-between; align-items: center;
-        }
+        #reply-preview-box { display: none; background: #1a1a1a; border-left: 3px solid var(--accent); padding: 10px; font-size: 0.8rem; color: #ccc; border-radius: 8px 8px 0 0; position: relative; justify-content: space-between; align-items: center; }
         .close-reply { cursor: pointer; font-size: 16px; color: #888; padding: 0 10px; }
 
         /* --- POPUPS --- */
-        #reaction-overlay, #action-menu-overlay {
-            display: none; position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%);
-            background: rgba(20,20,20,0.95); backdrop-filter: blur(10px);
-            padding: 15px; border-radius: 20px; border: 1px solid #333;
-            z-index: 2000; box-shadow: 0 5px 20px rgba(0,0,0,0.8);
-            width: 90%; max-width: 320px; flex-direction: column; animation: popUp 0.2s ease-out;
-        }
+        #reaction-overlay, #action-menu-overlay { display: none; position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: rgba(20,20,20,0.95); backdrop-filter: blur(10px); padding: 15px; border-radius: 20px; border: 1px solid #333; z-index: 2000; box-shadow: 0 5px 20px rgba(0,0,0,0.8); width: 90%; max-width: 320px; flex-direction: column; animation: popUp 0.2s ease-out; }
         @keyframes popUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
         .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; max-height: 180px; overflow-y: auto; text-align: center; }
         .emoji-btn { font-size: 24px; cursor: pointer; transition: 0.2s; }
@@ -182,8 +92,6 @@
         .act-btn.delete { color: var(--accent); border-color: rgba(255,77,77,0.3); }
 
         #dim-bg { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: transparent; z-index: 1999; }
-
-        /* Custom Alert */
         #custom-alert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; }
         .custom-alert-box { background: #111; border: 1px solid var(--accent); padding: 25px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center; }
         .custom-alert-box h3 { color: var(--accent); margin-bottom: 12px; font-size: 1.1rem; text-transform: uppercase; }
@@ -212,7 +120,7 @@
 <div id="lobby-screen">
     <div class="lobby-box">
         <h2>RAJ MODS</h2>
-        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v16.0 | FINAL EDITION</p>
+        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v16.1 | FULL ENGINE</p>
         <div class="lobby-id-box"><span id="my-lobby-id">Generating Key...</span><button type="button" class="copy-btn" id="copy-action-btn" onclick="copyMyID()">COPY KEY</button></div>
         <input type="text" id="username-input" class="lobby-input" placeholder="Your Name" maxlength="12">
         <input type="text" id="target-id" class="lobby-input" placeholder="Partner's Key (Paste here)">
@@ -241,7 +149,6 @@
 
     <div class="controls-area">
         <input type="file" id="file-input" accept="image/*,video/*,audio/*" style="display:none;" onchange="handleFileUpload(event)">
-        
         <button class="attach-btn" onclick="document.getElementById('file-input').click()">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
         </button>
@@ -299,23 +206,24 @@
     function closeCustomAlert() { document.getElementById('custom-alert-overlay').style.display = 'none'; }
     if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { document.body.style.height = window.visualViewport.height + 'px'; const chatBox = document.getElementById('chat-box'); chatBox.scrollTop = chatBox.scrollHeight; });
 
+    // --- GLOBALS ---
     let peer, myUsername, activeConnections = {}, peerIdToName = {};
     let unreadMessages = [], msgReactions = {};
     let localStream = null, currentCall = null, pendingIncomingCall = null;
     let activeReplyId = null, editingMsgId = null, selectedMsgIdForAction = null;
 
     const allEmojis = ["❤️","😂","😮","😢","👍","🙏","🔥","🥰","👏","😁","😎","🥳","😡","👎","🎉","💯","✨","💔","💩","👻","👀","🙌","🤔","🤫","🤯","🥶","🤡","👽","🙊","💋"];
-    allEmojis.forEach(e => document.getElementById('emoji-list').innerHTML += `<span class="emoji-btn" onclick="sendReaction('${e}')">${e}</span>`);
+    const emojiListDiv = document.getElementById('emoji-list');
+    allEmojis.forEach(e => emojiListDiv.innerHTML += `<span class="emoji-btn" onclick="sendReaction('${e}')">${e}</span>`);
 
     peer = new Peer({ config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} });
     peer.on('open', id => { document.getElementById('my-lobby-id').innerHTML = `<b style="color:#fff;" id="raw-id">${id}</b>`; });
-    
     peer.on('connection', (conn) => { setupConnection(conn); });
     peer.on('call', (call) => { pendingIncomingCall = call; document.getElementById('caller-name').innerText = `Partner is calling...`; document.getElementById('incoming-call-modal').style.display = 'block'; });
 
     // --- NOTIFICATIONS ---
     function requestNotificationPermission() { if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); }
-    function playNotificationSound() { try { const audio = new Audio('https://actions.google.com/sounds/v1/water/water_drop.ogg'); audio.play().catch(e => console.log("Sound autoplay blocked")); } catch (e) {} }
+    function playNotificationSound() { try { const audio = new Audio('https://actions.google.com/sounds/v1/water/water_drop.ogg'); audio.play().catch(e => console.log("Sound blocked")); } catch (e) {} }
     function showPushNotification(sender, messageText) {
         if ("Notification" in window && Notification.permission === "granted") {
             if (document.visibilityState === 'hidden') {
@@ -326,6 +234,7 @@
         }
     }
 
+    // --- COPY ID ---
     function copyMyID() {
         const idText = document.getElementById('raw-id').innerText;
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(idText).then(showCopySuccess).catch(() => fallbackCopy(idText));
@@ -334,18 +243,19 @@
     function fallbackCopy(t) { const el = document.createElement("textarea"); el.value = t; document.body.appendChild(el); el.select(); try { document.execCommand('copy'); showCopySuccess(); } catch (e) { showCustomAlert("Copy Failed", "Manual Copy: " + t); } document.body.removeChild(el); }
     function showCopySuccess() { const btn = document.getElementById('copy-action-btn'); btn.innerText = "COPIED!"; btn.style.background = "#fff"; setTimeout(() => { btn.innerText = "COPY KEY"; btn.style.background = "var(--accent)"; }, 1500); }
 
+    // --- START CHAT ---
     function startChat() {
         const name = document.getElementById('username-input').value.trim();
         if(!name) return showCustomAlert("Name Required", "Bhai, enter your name before starting!");
         
         requestNotificationPermission();
-
         myUsername = name.toUpperCase(); const targetId = document.getElementById('target-id').value.trim();
         document.getElementById('lobby-screen').style.display = 'none'; document.getElementById('chat-screen').style.display = 'flex';
         
         if(targetId && targetId !== peer.id) setupConnection(peer.connect(targetId));
     }
 
+    // --- CONNECTION LOGIC ---
     function setupConnection(conn) {
         conn.on('open', () => { 
             activeConnections[conn.peer] = conn; conn.send({type: 'HANDSHAKE', name: myUsername}); 
@@ -368,17 +278,17 @@
             else if(data.type === 'REACTION') { updateReactionUI(data.msgId, data.name, data.emoji); }
             else if(data.type === 'EDIT') { updateBubbleText(data.msgId, data.text); }
             else if(data.type === 'DELETE') { removeBubbleText(data.msgId); }
-            // CALL LOGS LOGIC
             else if(data.type === 'CALL_LOG') { appendCallLogMsg(data.status); } 
         });
         conn.on('close', () => { delete activeConnections[conn.peer]; updateCount(); hideTyping(); cleanupCallUI(); });
     }
 
+    // --- READ RECEIPTS ---
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === 'visible' && unreadMessages.length > 0) sendReadReceipts(); });
     document.getElementById('msg-input').addEventListener('focus', () => { if(unreadMessages.length > 0) sendReadReceipts(); });
     function sendReadReceipts() { Object.values(activeConnections).forEach(c => unreadMessages.forEach(id => c.send({type: 'READ', msgId: id}))); unreadMessages = []; }
 
-    // --- INPUT LOGIC ---
+    // --- INPUT / SEND CHAT ---
     const msgInput = document.getElementById('msg-input'); 
     const sendBtn = document.getElementById('send-btn');
     const micBtn = document.getElementById('mic-btn');
@@ -387,7 +297,6 @@
     msgInput.addEventListener('input', () => {
         if(msgInput.value.trim().length > 0) { micBtn.style.display = 'none'; sendBtn.style.display = 'flex'; } 
         else { micBtn.style.display = 'flex'; sendBtn.style.display = 'none'; }
-
         if(Object.keys(activeConnections).length === 0) return;
         Object.values(activeConnections).forEach(c => c.send({type: 'TYPING', isTyping: true, name: myUsername}));
         clearTimeout(typingTimer); typingTimer = setTimeout(() => { Object.values(activeConnections).forEach(c => c.send({type: 'TYPING', isTyping: false, name: myUsername})); }, 1500);
@@ -421,8 +330,7 @@
 
     // --- MEDIA UPLOAD ---
     function handleFileUpload(event) {
-        const file = event.target.files[0];
-        if(!file) return;
+        const file = event.target.files[0]; if(!file) return;
         if(file.size > 5 * 1024 * 1024) return showCustomAlert("File Too Large", "Bhai, please select a file smaller than 5MB.");
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -433,7 +341,7 @@
         reader.readAsDataURL(file); event.target.value = ""; 
     }
 
-    // --- VOICE MESSAGE RECORDING (FIXED FOR ALL BROWSERS) ---
+    // --- VOICE MESSAGE RECORDING ---
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
@@ -460,21 +368,19 @@
     }
 
     function stopRecording(e) {
-        e.preventDefault();
+        if(e) e.preventDefault();
         if(!isRecording) return;
         if(mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
         isRecording = false;
         micBtn.classList.remove('recording');
     }
 
-    // Attach strict events to prevent recording hang
     micBtn.addEventListener('touchstart', startRecording, {passive: false});
     micBtn.addEventListener('mousedown', startRecording);
     window.addEventListener('touchend', stopRecording);
     window.addEventListener('mouseup', stopRecording);
 
-
-    // --- RENDER MESSAGES ---
+    // --- DOM MESSAGE RENDER ---
     function addMsg(sender, data, type, msgId, replyObj = null, msgType = 'text') {
         const box = document.getElementById('chat-box'); const div = document.createElement('div');
         div.className = `msg-con ${type}`; div.id = `con-${msgId}`;
@@ -482,15 +388,10 @@
         let replyHTML = ''; if(replyObj) replyHTML = `<div class="quoted-msg"><div class="quoted-name">${replyObj.sender}</div><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">${replyObj.text}</div></div>`;
 
         let contentHTML = ''; let extraClass = '';
-        if (msgType === 'image') {
-            contentHTML = `<img src="${data}" onclick="openFullscreen(this.src)">`; extraClass = 'media-bubble';
-        } else if (msgType === 'video') {
-            contentHTML = `<video src="${data}" controls></video>`; extraClass = 'media-bubble';
-        } else if (msgType === 'audio') {
-            contentHTML = `<audio src="${data}" controls></audio>`;
-        } else {
-            contentHTML = `<span class="bubble-text">${data}</span>`;
-        }
+        if (msgType === 'image') { contentHTML = `<img src="${data}" onclick="openFullscreen(this.src)">`; extraClass = 'media-bubble'; } 
+        else if (msgType === 'video') { contentHTML = `<video src="${data}" controls></video>`; extraClass = 'media-bubble'; } 
+        else if (msgType === 'audio') { contentHTML = `<audio src="${data}" controls></audio>`; } 
+        else { contentHTML = `<span class="bubble-text">${data}</span>`; }
 
         const safeText = msgType === 'text' ? data : (msgType === 'audio' ? '🎤 Voice Message' : '📷 Media');
 
@@ -548,6 +449,7 @@
 
     chatBox.addEventListener('touchend', (e) => {
         clearTimeout(pressTimer); if(!activeBubble) return;
+        
         const diffX = currentX - touchStartX; const msgId = activeBubble.closest('.msg-con').id.replace('con-', '');
 
         if(isSwiping && diffX > 40) {
@@ -561,6 +463,7 @@
     });
     chatBox.addEventListener('touchcancel', () => { clearTimeout(pressTimer); if(activeBubble) { activeBubble.style.transform = 'translateX(0)'; activeBubble = null; } });
 
+    // --- REPLIES ---
     function initiateReply(msgId, bubbleEl) {
         activeReplyId = msgId;
         const sender = bubbleEl.closest('.msg-con').querySelector('.msg-info span').innerText;
@@ -571,6 +474,7 @@
     }
     function cancelReply() { activeReplyId = null; document.getElementById('reply-preview-box').style.display = 'none'; }
 
+    // --- EDIT / DELETE ACTIONS ---
     function openMessageActions(fullConId) {
         selectedMsgIdForAction = fullConId.replace('con-', '');
         const isMe = document.getElementById(fullConId).classList.contains('me');
@@ -618,17 +522,17 @@
             bubble.innerHTML = `<span class="bubble-text" style="font-style:italic; color:#777;">🚫 This message was deleted</span>`;
             document.getElementById(`edit-tag-${msgId}`).innerText = "";
             bubble.setAttribute('data-raw-text', encodeURIComponent("🚫 This message was deleted"));
-            bubble.classList.remove("media-bubble"); // Reset if it was an image
+            bubble.classList.remove("media-bubble"); 
         }
     }
 
+    // --- REACTIONS ---
     function openReactionPicker(msgId) {
         const text = decodeURIComponent(document.getElementById(`bubble-${msgId}`).getAttribute('data-raw-text'));
         if(text === "🚫 This message was deleted") return;
         selectedMsgIdForAction = msgId; document.getElementById('reaction-overlay').style.display = 'flex'; document.getElementById('dim-bg').style.display = 'block';
     }
     function closePopups() { document.getElementById('reaction-overlay').style.display = 'none'; document.getElementById('action-menu-overlay').style.display = 'none'; document.getElementById('dim-bg').style.display = 'none'; selectedMsgIdForAction = null; }
-    
     function sendReaction(emoji) {
         if(!selectedMsgIdForAction) return; updateReactionUI(selectedMsgIdForAction, myUsername, emoji);
         Object.values(activeConnections).forEach(c => c.send({type: 'REACTION', msgId: selectedMsgIdForAction, emoji: emoji, name: myUsername})); closePopups();
@@ -649,11 +553,11 @@
         } else badge.style.display = 'none';
     }
 
+    // --- TICK & TYPING LOGIC ---
     function markAsDelivered(msgId) { const tick = document.getElementById(`tick-${msgId}`); if(tick && tick.innerText === "✓") { tick.innerText = "✓✓"; tick.classList.add('delivered'); } }
     function markAsRead(msgId) { const tick = document.getElementById(`tick-${msgId}`); if(tick) { tick.innerText = "✓✓"; tick.classList.add('seen'); } }
     function showTyping(name) { document.getElementById('typer-name').innerText = name; document.getElementById('typing-indicator').style.display = 'block'; document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight; }
     function hideTyping() { document.getElementById('typing-indicator').style.display = 'none'; }
-    
     function updateCount() { 
         const count = Object.keys(activeConnections).length; 
         document.getElementById('chat-header').innerHTML = `HATKE SECURE (${count + 1})`;
@@ -664,52 +568,12 @@
     async function getMediaStream() { try { return await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true }); } catch (err) { showCustomAlert("Camera Error", "HTTPS required, or Camera blocked."); return null; } }
     async function initiateCall() { const peerId = Object.keys(activeConnections)[0]; if(!peerId) return; localStream = await getMediaStream(); if(!localStream) return; document.getElementById('local-video').srcObject = localStream; document.getElementById('video-call-screen').style.display = 'flex'; currentCall = peer.call(peerId, localStream); setupCallEvents(currentCall); }
     async function acceptCall() { document.getElementById('incoming-call-modal').style.display = 'none'; localStream = await getMediaStream(); if(!localStream) { pendingIncomingCall.close(); return; } document.getElementById('local-video').srcObject = localStream; document.getElementById('video-call-screen').style.display = 'flex'; currentCall = pendingIncomingCall; currentCall.answer(localStream); setupCallEvents(currentCall); }
-    
-    function rejectCall() { 
-        document.getElementById('incoming-call-modal').style.display = 'none'; 
-        if(pendingIncomingCall) pendingIncomingCall.close(); 
-        Object.values(activeConnections).forEach(c => c.send({type: 'CALL_LOG', status: 'missed'})); 
-        appendCallLogMsg('missed'); // Log for myself too
-    }
-    
+    function rejectCall() { document.getElementById('incoming-call-modal').style.display = 'none'; if(pendingIncomingCall) pendingIncomingCall.close(); Object.values(activeConnections).forEach(c => c.send({type: 'CALL_LOG', status: 'missed'})); appendCallLogMsg('missed'); }
     function setupCallEvents(call) { call.on('stream', (remoteStream) => { const rVid = document.getElementById('remote-video'); if (rVid.srcObject !== remoteStream) { rVid.srcObject = remoteStream; rVid.play().catch(e=>console.error(e)); } }); call.on('close', cleanupCallUI); }
-    
-    function endCall() { 
-        if(currentCall) currentCall.close(); 
-        Object.values(activeConnections).forEach(c => c.send({type: 'CALL_LOG', status: 'ended'})); 
-        appendCallLogMsg('ended');
-        cleanupCallUI(); 
-    }
-    
+    function endCall() { if(currentCall) currentCall.close(); Object.values(activeConnections).forEach(c => c.send({type: 'CALL_LOG', status: 'ended'})); appendCallLogMsg('ended'); cleanupCallUI(); }
     function cleanupCallUI() { document.getElementById('video-call-screen').style.display = 'none'; document.getElementById('incoming-call-modal').style.display = 'none'; if(localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; } currentCall = null; pendingIncomingCall = null; document.getElementById('remote-video').srcObject = null; document.getElementById('local-video').srcObject = null; }
-    
-    function toggleAudio() { 
-        if(localStream) { 
-            const audioTrack = localStream.getAudioTracks()[0]; audioTrack.enabled = !audioTrack.enabled; 
-            const btn = document.getElementById('mute-btn');
-            if(audioTrack.enabled) { 
-                btn.classList.remove('disabled');
-                document.getElementById('mic-icon-svg').innerHTML = `<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>`;
-            } else { 
-                btn.classList.add('disabled');
-                document.getElementById('mic-icon-svg').innerHTML = `<line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>`;
-            }
-        } 
-    }
-    
-    function toggleVideo() { 
-        if(localStream) { 
-            const videoTrack = localStream.getVideoTracks()[0]; videoTrack.enabled = !videoTrack.enabled; 
-            const btn = document.getElementById('cam-btn');
-            if(videoTrack.enabled) { 
-                btn.classList.remove('disabled');
-                document.getElementById('cam-icon-svg').innerHTML = `<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>`;
-            } else { 
-                btn.classList.add('disabled');
-                document.getElementById('cam-icon-svg').innerHTML = `<path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>`;
-            }
-        } 
-    }
+    function toggleAudio() { if(localStream) { const audioTrack = localStream.getAudioTracks()[0]; audioTrack.enabled = !audioTrack.enabled; const btn = document.getElementById('mute-btn'); if(audioTrack.enabled) { btn.classList.remove('disabled'); document.getElementById('mic-icon-svg').innerHTML = `<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>`; } else { btn.classList.add('disabled'); document.getElementById('mic-icon-svg').innerHTML = `<line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>`; } } }
+    function toggleVideo() { if(localStream) { const videoTrack = localStream.getVideoTracks()[0]; videoTrack.enabled = !videoTrack.enabled; const btn = document.getElementById('cam-btn'); if(videoTrack.enabled) { btn.classList.remove('disabled'); document.getElementById('cam-icon-svg').innerHTML = `<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>`; } else { btn.classList.add('disabled'); document.getElementById('cam-icon-svg').innerHTML = `<path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line>`; } } }
 </script>
 
 </body>
