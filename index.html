@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>RAJ MODS | HATKE v10.0</title>
+    <title>RAJ MODS | HATKE v11.0</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --accent: #ff4d4d; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
@@ -66,7 +66,7 @@
         #chat-box { 
             flex: 1; overflow-y: auto; padding: 20px; 
             display: flex; flex-direction: column; gap: 15px; background: #08080a;
-            touch-action: pan-y; /* Important for swipe to reply */
+            user-select: none; -webkit-user-select: none;
         }
         #chat-box::-webkit-scrollbar { width: 4px; }
         #chat-box::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
@@ -81,8 +81,8 @@
 
         .msg-bubble { 
             padding: 10px 14px; border-radius: 18px; font-size: 0.95rem; 
-            word-wrap: break-word; position: relative; user-select: none;
-            will-change: transform; /* Smooth Swipe */
+            word-wrap: break-word; position: relative;
+            will-change: transform; transition: transform 0.2s ease-out;
         }
         .me .msg-bubble { background: var(--accent); color: #000; border-bottom-right-radius: 2px; }
         .peer .msg-bubble { background: #1e1e22; color: #fff; border-bottom-left-radius: 2px; border: 1px solid #333; }
@@ -90,8 +90,7 @@
         /* Quoted/Reply Box */
         .quoted-msg {
             background: rgba(0,0,0,0.15); border-left: 3px solid #000;
-            padding: 5px 8px; border-radius: 6px; margin-bottom: 5px; font-size: 0.8rem;
-            opacity: 0.8;
+            padding: 5px 8px; border-radius: 6px; margin-bottom: 5px; font-size: 0.8rem; opacity: 0.8;
         }
         .peer .quoted-msg { background: rgba(255,255,255,0.05); border-left-color: var(--accent); }
         .quoted-name { font-weight: bold; font-size: 0.75rem; margin-bottom: 2px; }
@@ -146,22 +145,21 @@
         @keyframes popUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
         
         .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; max-height: 180px; overflow-y: auto; text-align: center; }
-        .emoji-btn { font-size: 24px; cursor: pointer; transition: 0.2s; user-select: none; }
+        .emoji-btn { font-size: 24px; cursor: pointer; transition: 0.2s; }
         
-        /* Edit/Delete Menu */
         .action-btn-row { display: flex; flex-direction: column; gap: 10px; }
         .act-btn { padding: 12px; background: #222; color: #fff; border: 1px solid #444; border-radius: 10px; font-size: 16px; cursor: pointer; }
         .act-btn.delete { color: var(--accent); border-color: rgba(255,77,77,0.3); }
 
         #dim-bg { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: transparent; z-index: 1999; }
 
-        /* --- CUSTOM ALERT --- */
+        /* Custom Alert */
         #custom-alert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; }
         .custom-alert-box { background: #111; border: 1px solid var(--accent); padding: 25px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center; }
         .custom-alert-box h3 { color: var(--accent); margin-bottom: 12px; font-size: 1.1rem; text-transform: uppercase; }
         .custom-alert-box p { color: #ddd; font-size: 14px; margin-bottom: 22px; }
         .custom-alert-btn { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
-        
+
         /* Video call elements hidden here for brevity but kept functional */
         #video-call-screen { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:3000; flex-direction:column; }
         #remote-video { width:100%; height:100%; object-fit:cover; background:#050505; }
@@ -181,7 +179,7 @@
 <div id="lobby-screen">
     <div class="lobby-box">
         <h2>RAJ MODS</h2>
-        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v10.0 | SWIPE & EDIT</p>
+        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v11.0 | LOCKED ROOM</p>
         <div class="lobby-id-box"><span id="my-lobby-id">Generating Key...</span><button type="button" class="copy-btn" id="copy-action-btn" onclick="copyMyID()">COPY KEY</button></div>
         <input type="text" id="username-input" class="lobby-input" placeholder="Your Name" maxlength="12">
         <input type="text" id="target-id" class="lobby-input" placeholder="Partner's Key (Paste here)">
@@ -226,7 +224,7 @@
 </div>
 
 <div id="video-call-screen"><video id="remote-video" autoplay playsinline></video><video id="local-video" autoplay playsinline muted></video><div class="call-action-bar"><button class="call-btn" id="mute-btn" onclick="toggleAudio()">🎤</button><button class="call-btn" id="cam-btn" onclick="toggleVideo()">📷</button><button class="call-btn end" onclick="endCall()">❌</button></div></div>
-<div id="incoming-call-modal"><h3>Incoming Video Call</h3><p id="caller-name">Partner is calling...</p><div class="incoming-btns"><button class="inc-btn accept" onclick="acceptCall()">Accept</button><button class="inc-btn reject" onclick="rejectCall()">Reject</button></div></div>
+<div id="incoming-call-modal"><h3>Incoming Video Call</h3><p id="caller-name" style="margin-bottom:10px;">Partner is calling...</p><div class="incoming-btns"><button class="inc-btn accept" onclick="acceptCall()">Accept</button><button class="inc-btn reject" onclick="rejectCall()">Reject</button></div></div>
 
 <script>
     // System UI
@@ -237,18 +235,27 @@
     let peer, myUsername, activeConnections = {}, peerIdToName = {};
     let unreadMessages = [], msgReactions = {};
     let localStream = null, currentCall = null, pendingIncomingCall = null;
-
-    // New State Variables
-    let activeReplyId = null;
-    let editingMsgId = null;
-    let selectedMsgIdForAction = null;
+    let activeReplyId = null, editingMsgId = null, selectedMsgIdForAction = null;
 
     const allEmojis = ["❤️","😂","😮","😢","👍","🙏","🔥","🥰","👏","😁","😎","🥳","😡","👎","🎉","💯","✨","💔","💩","👻","👀","🙌","🤔","🤫","🤯","🥶","🤡","👽","🙊","💋"];
     allEmojis.forEach(e => document.getElementById('emoji-list').innerHTML += `<span class="emoji-btn" onclick="sendReaction('${e}')">${e}</span>`);
 
     peer = new Peer({ config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} });
     peer.on('open', id => { document.getElementById('my-lobby-id').innerHTML = `<b style="color:#fff;" id="raw-id">${id}</b>`; });
-    peer.on('connection', setupConnection);
+    
+    // SECURITY UPDATE: ROOM LOCK SYSTEM
+    peer.on('connection', (conn) => {
+        // Agar pehle se koi connected hai, toh naye bande ko auto-reject kar do
+        if (Object.keys(activeConnections).length >= 1) {
+            conn.on('open', () => {
+                conn.send({type: 'SYS_REJECT'});
+                setTimeout(() => conn.close(), 500);
+            });
+            return;
+        }
+        setupConnection(conn);
+    });
+
     peer.on('call', (call) => { pendingIncomingCall = call; document.getElementById('caller-name').innerText = `Partner is calling...`; document.getElementById('incoming-call-modal').style.display = 'block'; });
 
     function copyMyID() {
@@ -268,7 +275,11 @@
     }
 
     function setupConnection(conn) {
-        conn.on('open', () => { activeConnections[conn.peer] = conn; conn.send({type: 'HANDSHAKE', name: myUsername}); updateCount(); });
+        conn.on('open', () => { 
+            activeConnections[conn.peer] = conn; 
+            conn.send({type: 'HANDSHAKE', name: myUsername}); 
+            updateCount(); 
+        });
         conn.on('data', (data) => {
             if(data.type === 'GHOST_CHAT') {
                 hideTyping(); addMsg(data.name, data.data, 'peer', data.msgId, data.replyObj);
@@ -283,6 +294,7 @@
             else if(data.type === 'EDIT') { updateBubbleText(data.msgId, data.text); }
             else if(data.type === 'DELETE') { removeBubbleText(data.msgId); }
             else if(data.type === 'CALL_ENDED') { cleanupCallUI(); } 
+            else if(data.type === 'SYS_REJECT') { showCustomAlert("Connection Rejected", "The room is already locked (2/2 members full)."); }
         });
         conn.on('close', () => { delete activeConnections[conn.peer]; updateCount(); hideTyping(); cleanupCallUI(); });
     }
@@ -304,19 +316,15 @@
     function send() {
         const text = msgInput.value.trim(); if(!text) return;
         
-        // Handle Edit
         if (editingMsgId) {
             updateBubbleText(editingMsgId, text);
             Object.values(activeConnections).forEach(c => c.send({type: 'EDIT', msgId: editingMsgId, text: text}));
             cancelEdit(); return;
         }
 
-        // Handle Normal/Reply Send
         const messageId = "msg_" + Date.now(); 
         let replyObj = null;
-        if(activeReplyId) {
-            replyObj = { sender: document.getElementById('reply-preview-name').innerText, text: document.getElementById('reply-preview-text').innerText };
-        }
+        if(activeReplyId) replyObj = { sender: document.getElementById('reply-preview-name').innerText, text: document.getElementById('reply-preview-text').innerText };
 
         Object.values(activeConnections).forEach(c => {
             c.send({type: 'TYPING', isTyping: false, name: myUsername});
@@ -326,15 +334,10 @@
         msgInput.value = ""; cancelReply();
     }
 
-    // Add Message to DOM
     function addMsg(sender, text, type, msgId, replyObj = null) {
         const box = document.getElementById('chat-box'); const div = document.createElement('div');
         div.className = `msg-con ${type}`; div.id = `con-${msgId}`;
-        
-        let replyHTML = '';
-        if(replyObj) {
-            replyHTML = `<div class="quoted-msg"><div class="quoted-name">${replyObj.sender}</div><div>${replyObj.text}</div></div>`;
-        }
+        let replyHTML = ''; if(replyObj) replyHTML = `<div class="quoted-msg"><div class="quoted-name">${replyObj.sender}</div><div>${replyObj.text}</div></div>`;
 
         div.innerHTML = `
             <div class="msg-bubble-wrapper">
@@ -351,63 +354,62 @@
         box.appendChild(div); box.scrollTop = box.scrollHeight;
     }
 
-    // --- SWIPE, TAP AND LONG PRESS LOGIC (Pointer Events support Mouse + Touch) ---
+    // --- FIX: NATIVE TOUCH EVENTS FOR SWIPE & LONG PRESS (MOBILE) ---
     const chatBox = document.getElementById('chat-box');
-    let pointerStartX = 0, pointerStartY = 0, touchBubble = null, isSwiping = false, pressTimer;
+    let touchStartX = 0, touchStartY = 0, currentX = 0;
+    let activeBubble = null, isSwiping = false, pressTimer;
 
-    chatBox.addEventListener('pointerdown', e => {
+    chatBox.addEventListener('touchstart', (e) => {
         const bubble = e.target.closest('.msg-bubble'); if(!bubble) return;
-        touchBubble = bubble; pointerStartX = e.clientX; pointerStartY = e.clientY; isSwiping = false;
-        touchBubble.style.transition = 'none';
+        activeBubble = bubble;
+        touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; currentX = touchStartX;
+        isSwiping = false; activeBubble.style.transition = 'none';
         
         pressTimer = setTimeout(() => {
             if(!isSwiping) openMessageActions(bubble.closest('.msg-con').id);
-        }, 500); // 500ms Long Press
-    });
+        }, 500); // 500ms hold for Edit/Delete menu
+    }, {passive: true});
 
-    chatBox.addEventListener('pointermove', e => {
-        if(!touchBubble) return;
-        const deltaX = e.clientX - pointerStartX; const deltaY = Math.abs(e.clientY - pointerStartY);
-        
-        // Swipe Right Detection
-        if(deltaX > 10 && deltaX > deltaY) {
+    chatBox.addEventListener('touchmove', (e) => {
+        if(!activeBubble) return;
+        currentX = e.touches[0].clientX;
+        const diffX = currentX - touchStartX; const diffY = Math.abs(e.touches[0].clientY - touchStartY);
+
+        // Right Swipe detection
+        if(diffX > 15 && diffX > diffY) {
             isSwiping = true; clearTimeout(pressTimer);
-            let moveX = Math.min(deltaX, 60); // Max drag distance
-            touchBubble.style.transform = `translateX(${moveX}px)`;
-        } else if(deltaY > 10) { clearTimeout(pressTimer); }
-    });
+            let moveX = Math.min(diffX, 60); // limit drag distance
+            activeBubble.style.transform = `translateX(${moveX}px)`;
+        } else if (diffY > 15) { clearTimeout(pressTimer); } // cancel on vertical scroll
+    }, {passive: true});
 
-    chatBox.addEventListener('pointerup', e => {
+    chatBox.addEventListener('touchend', (e) => {
         clearTimeout(pressTimer);
-        if(!touchBubble) return;
+        if(!activeBubble) return;
         
-        const msgId = touchBubble.closest('.msg-con').id.replace('con-', '');
-        
-        if(isSwiping) {
-            const deltaX = e.clientX - pointerStartX;
-            if(deltaX > 40) initiateReply(msgId, touchBubble); // Trigger Reply
-            touchBubble.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            touchBubble.style.transform = 'translateX(0)';
-        } else {
-            // It was a tap (less than 500ms, no swipe) -> Open Reactions
-            if (e.target.closest('.reaction-badge') === null) {
-                openReactionPicker(msgId);
-            }
+        const diffX = currentX - touchStartX;
+        const msgId = activeBubble.closest('.msg-con').id.replace('con-', '');
+
+        if(isSwiping && diffX > 40) {
+            initiateReply(msgId, activeBubble);
+        } else if (!isSwiping && e.target.closest('.reaction-badge') === null) {
+            // It was a simple Tap
+            openReactionPicker(msgId);
         }
-        touchBubble = null;
+
+        activeBubble.style.transition = 'transform 0.3s ease';
+        activeBubble.style.transform = 'translateX(0)';
+        setTimeout(() => { if(activeBubble) activeBubble.style.transition = 'none'; activeBubble = null; }, 300);
     });
-    chatBox.addEventListener('pointercancel', () => { clearTimeout(pressTimer); if(touchBubble) { touchBubble.style.transform = 'translateX(0)'; touchBubble = null; } });
+    chatBox.addEventListener('touchcancel', () => { clearTimeout(pressTimer); if(activeBubble) { activeBubble.style.transform = 'translateX(0)'; activeBubble = null; } });
 
 
-    // --- REPLY SYSTEM ---
     function initiateReply(msgId, bubbleEl) {
         activeReplyId = msgId;
         const sender = bubbleEl.closest('.msg-con').querySelector('.msg-info span').innerText;
         const textObj = bubbleEl.querySelector('.bubble-text');
         const text = textObj ? textObj.innerText : "🚫 Deleted Message";
-        
-        if(text === "🚫 This message was deleted") return; // Cant reply to deleted
-
+        if(text === "🚫 This message was deleted") return; 
         document.getElementById('reply-preview-name').innerText = sender;
         document.getElementById('reply-preview-text').innerText = text;
         document.getElementById('reply-preview-box').style.display = 'flex';
@@ -415,19 +417,13 @@
     }
     function cancelReply() { activeReplyId = null; document.getElementById('reply-preview-box').style.display = 'none'; }
 
-
-    // --- EDIT & DELETE SYSTEM ---
     function openMessageActions(fullConId) {
         selectedMsgIdForAction = fullConId.replace('con-', '');
         const isMe = document.getElementById(fullConId).classList.contains('me');
-        
-        // Sirf apne messages Delete ya Edit kar sakte hain
         if(isMe) {
             const textObj = document.getElementById(`bubble-${selectedMsgIdForAction}`).querySelector('.bubble-text');
-            if(textObj && textObj.innerText === "🚫 This message was deleted") return; // already deleted
-
-            document.getElementById('action-menu-overlay').style.display = 'flex';
-            document.getElementById('dim-bg').style.display = 'block';
+            if(textObj && textObj.innerText === "🚫 This message was deleted") return; 
+            document.getElementById('action-menu-overlay').style.display = 'flex'; document.getElementById('dim-bg').style.display = 'block';
         }
     }
 
@@ -435,31 +431,22 @@
         closePopups();
         const bubble = document.getElementById(`bubble-${selectedMsgIdForAction}`);
         const rawText = decodeURIComponent(bubble.getAttribute('data-raw-text'));
-        
         editingMsgId = selectedMsgIdForAction;
-        const input = document.getElementById('msg-input');
-        input.value = rawText; input.focus();
-        
-        // Change send button icon to Check
+        const input = document.getElementById('msg-input'); input.value = rawText; input.focus();
         document.getElementById('send-icon').innerHTML = `<polyline points="20 6 9 17 4 12"></polyline>`;
     }
-    function cancelEdit() {
-        editingMsgId = null;
-        document.getElementById('send-icon').innerHTML = `<line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>`;
-    }
+    function cancelEdit() { editingMsgId = null; document.getElementById('send-icon').innerHTML = `<line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>`; }
     function updateBubbleText(msgId, newText) {
         const bubble = document.getElementById(`bubble-${msgId}`);
         if(bubble) {
             bubble.setAttribute('data-raw-text', encodeURIComponent(newText));
-            const textSpan = bubble.querySelector('.bubble-text');
-            if(textSpan) textSpan.innerText = newText;
+            const textSpan = bubble.querySelector('.bubble-text'); if(textSpan) textSpan.innerText = newText;
             document.getElementById(`edit-tag-${msgId}`).innerText = "(edited)";
         }
     }
 
     function triggerDelete() {
-        closePopups();
-        removeBubbleText(selectedMsgIdForAction);
+        closePopups(); removeBubbleText(selectedMsgIdForAction);
         Object.values(activeConnections).forEach(c => c.send({type: 'DELETE', msgId: selectedMsgIdForAction}));
     }
     function removeBubbleText(msgId) {
@@ -470,19 +457,15 @@
         }
     }
 
-
-    // --- REACTION & POPUP UTILS ---
     function openReactionPicker(msgId) {
         const textObj = document.getElementById(`bubble-${msgId}`).querySelector('.bubble-text');
         if(textObj && textObj.innerText === "🚫 This message was deleted") return;
-
         selectedMsgIdForAction = msgId; document.getElementById('reaction-overlay').style.display = 'flex'; document.getElementById('dim-bg').style.display = 'block';
     }
     function closePopups() { document.getElementById('reaction-overlay').style.display = 'none'; document.getElementById('action-menu-overlay').style.display = 'none'; document.getElementById('dim-bg').style.display = 'none'; selectedMsgIdForAction = null; }
     function sendReaction(emoji) {
         if(!selectedMsgIdForAction) return; updateReactionUI(selectedMsgIdForAction, myUsername, emoji);
-        Object.values(activeConnections).forEach(c => c.send({type: 'REACTION', msgId: selectedMsgIdForAction, emoji: emoji, name: myUsername}));
-        closePopups();
+        Object.values(activeConnections).forEach(c => c.send({type: 'REACTION', msgId: selectedMsgIdForAction, emoji: emoji, name: myUsername})); closePopups();
     }
     function updateReactionUI(msgId, userName, emoji) {
         if (!msgReactions[msgId]) msgReactions[msgId] = {};
@@ -500,14 +483,25 @@
         } else badge.style.display = 'none';
     }
 
-    // --- OTHER UTILS ---
     function markAsDelivered(msgId) { const tick = document.getElementById(`tick-${msgId}`); if(tick && tick.innerText === "✓") { tick.innerText = "✓✓"; tick.classList.add('delivered'); } }
     function markAsRead(msgId) { const tick = document.getElementById(`tick-${msgId}`); if(tick) { tick.innerText = "✓✓"; tick.classList.add('seen'); } }
     function showTyping(name) { document.getElementById('typer-name').innerText = name; document.getElementById('typing-indicator').style.display = 'block'; document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight; }
     function hideTyping() { document.getElementById('typing-indicator').style.display = 'none'; }
-    function updateCount() { const count = Object.keys(activeConnections).length; document.getElementById('chat-header').innerText = `HATKE SECURE (${count + 1}/2)`; document.getElementById('start-video-btn').style.display = count > 0 ? 'block' : 'none'; }
+    
+    function updateCount() { 
+        const count = Object.keys(activeConnections).length; 
+        // Security UI Update
+        if (count > 0) {
+            document.getElementById('chat-header').innerHTML = `HATKE SECURE (2/2) 🔒 LOCKED`; 
+            document.getElementById('chat-header').style.color = "#00d26a";
+        } else {
+            document.getElementById('chat-header').innerHTML = `HATKE SECURE (1/2)`;
+            document.getElementById('chat-header').style.color = "var(--accent)";
+        }
+        document.getElementById('start-video-btn').style.display = count > 0 ? 'block' : 'none'; 
+    }
 
-    // --- VIDEO LOGIC (Same as v9.5) ---
+    // Video Call Logic 
     async function getMediaStream() { try { return await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true }); } catch (err) { showCustomAlert("Camera Error", "Secure HTTPS required, or Camera blocked."); return null; } }
     async function initiateCall() { const peerId = Object.keys(activeConnections)[0]; if(!peerId) return; localStream = await getMediaStream(); if(!localStream) return; document.getElementById('local-video').srcObject = localStream; document.getElementById('video-call-screen').style.display = 'flex'; currentCall = peer.call(peerId, localStream); setupCallEvents(currentCall); }
     async function acceptCall() { document.getElementById('incoming-call-modal').style.display = 'none'; localStream = await getMediaStream(); if(!localStream) { pendingIncomingCall.close(); return; } document.getElementById('local-video').srcObject = localStream; document.getElementById('video-call-screen').style.display = 'flex'; currentCall = pendingIncomingCall; currentCall.answer(localStream); setupCallEvents(currentCall); }
