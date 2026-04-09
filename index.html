@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>RAJ MODS | HATKE v16.1</title>
+    <title>RAJ MODS | HATKE v16.2</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --accent: #ff4d4d; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        html, body { background: var(--bg); color: #fff; font-family: 'SF Pro Display', -apple-system, sans-serif; height: 100%; width: 100%; overflow: hidden; position: fixed; overscroll-behavior: none; }
+        
+        /* FIX: Removed position:fixed from body to fix keyboard and click issues */
+        html, body { background: var(--bg); color: #fff; font-family: 'SF Pro Display', -apple-system, sans-serif; height: 100%; width: 100%; overflow: hidden; overscroll-behavior: none; }
         svg { display: block; } 
 
         /* --- LOBBY SCREEN --- */
-        #lobby-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1a0a0a 0%, #050505 100%); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        #lobby-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1a0a0a 0%, #050505 100%); display: flex; justify-content: center; align-items: center; z-index: 2000; }
         .lobby-box { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); text-align: center; width: 85%; max-width: 380px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         .lobby-box h2 { color: var(--accent); letter-spacing: 3px; margin-bottom: 5px; text-transform: uppercase; }
         .lobby-id-box { background: #111; border: 1px dashed #444; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 0.85rem; color: #aaa; display: flex; justify-content: space-between; align-items: center; }
@@ -92,6 +94,8 @@
         .act-btn.delete { color: var(--accent); border-color: rgba(255,77,77,0.3); }
 
         #dim-bg { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: transparent; z-index: 1999; }
+
+        /* Custom Alert */
         #custom-alert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; }
         .custom-alert-box { background: #111; border: 1px solid var(--accent); padding: 25px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center; }
         .custom-alert-box h3 { color: var(--accent); margin-bottom: 12px; font-size: 1.1rem; text-transform: uppercase; }
@@ -120,7 +124,7 @@
 <div id="lobby-screen">
     <div class="lobby-box">
         <h2>RAJ MODS</h2>
-        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v16.1 | FULL ENGINE</p>
+        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v16.2 | TOUCH FIX</p>
         <div class="lobby-id-box"><span id="my-lobby-id">Generating Key...</span><button type="button" class="copy-btn" id="copy-action-btn" onclick="copyMyID()">COPY KEY</button></div>
         <input type="text" id="username-input" class="lobby-input" placeholder="Your Name" maxlength="12">
         <input type="text" id="target-id" class="lobby-input" placeholder="Partner's Key (Paste here)">
@@ -204,20 +208,21 @@
     // --- UI HELPERS ---
     function showCustomAlert(title, message) { document.getElementById('custom-alert-title').innerText = title; document.getElementById('custom-alert-text').innerText = message; document.getElementById('custom-alert-overlay').style.display = 'flex'; }
     function closeCustomAlert() { document.getElementById('custom-alert-overlay').style.display = 'none'; }
+    
+    // Keyboard resize fix
     if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { document.body.style.height = window.visualViewport.height + 'px'; const chatBox = document.getElementById('chat-box'); chatBox.scrollTop = chatBox.scrollHeight; });
 
-    // --- GLOBALS ---
     let peer, myUsername, activeConnections = {}, peerIdToName = {};
     let unreadMessages = [], msgReactions = {};
     let localStream = null, currentCall = null, pendingIncomingCall = null;
     let activeReplyId = null, editingMsgId = null, selectedMsgIdForAction = null;
 
     const allEmojis = ["❤️","😂","😮","😢","👍","🙏","🔥","🥰","👏","😁","😎","🥳","😡","👎","🎉","💯","✨","💔","💩","👻","👀","🙌","🤔","🤫","🤯","🥶","🤡","👽","🙊","💋"];
-    const emojiListDiv = document.getElementById('emoji-list');
-    allEmojis.forEach(e => emojiListDiv.innerHTML += `<span class="emoji-btn" onclick="sendReaction('${e}')">${e}</span>`);
+    allEmojis.forEach(e => document.getElementById('emoji-list').innerHTML += `<span class="emoji-btn" onclick="sendReaction('${e}')">${e}</span>`);
 
     peer = new Peer({ config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} });
     peer.on('open', id => { document.getElementById('my-lobby-id').innerHTML = `<b style="color:#fff;" id="raw-id">${id}</b>`; });
+    
     peer.on('connection', (conn) => { setupConnection(conn); });
     peer.on('call', (call) => { pendingIncomingCall = call; document.getElementById('caller-name').innerText = `Partner is calling...`; document.getElementById('incoming-call-modal').style.display = 'block'; });
 
@@ -341,7 +346,7 @@
         reader.readAsDataURL(file); event.target.value = ""; 
     }
 
-    // --- VOICE MESSAGE RECORDING ---
+    // --- VOICE MESSAGE RECORDING (FIXED TOUCH) ---
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
@@ -368,7 +373,7 @@
     }
 
     function stopRecording(e) {
-        if(e) e.preventDefault();
+        // FIX: Removed e.preventDefault() so it doesn't block global clicks
         if(!isRecording) return;
         if(mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
         isRecording = false;
