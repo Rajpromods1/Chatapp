@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>RAJ MODS | HATKE v16.2</title>
+    <title>RAJ MODS | HATKE v16.5</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --accent: #ff4d4d; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
-        /* FIX: Removed position:fixed from body to fix keyboard and click issues */
-        html, body { background: var(--bg); color: #fff; font-family: 'SF Pro Display', -apple-system, sans-serif; height: 100%; width: 100%; overflow: hidden; overscroll-behavior: none; }
+        html, body { background: var(--bg); color: #fff; font-family: 'SF Pro Display', -apple-system, sans-serif; height: 100%; width: 100%; overflow: hidden; position: fixed; overscroll-behavior: none; }
         svg { display: block; } 
 
         /* --- LOBBY SCREEN --- */
@@ -27,7 +26,7 @@
         /* --- CHAT INTERFACE --- */
         #chat-screen { display: none; height: 100%; width: 100%; flex-direction: column; position: absolute; top: 0; left: 0; }
         header { padding: 15px; border-bottom: 1px solid #1a1a1a; background: rgba(10,10,10,0.9); font-weight: bold; color: var(--accent); letter-spacing: 1.5px; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
-        .video-call-icon { cursor: pointer; display: none; padding: 8px; background: #222; border-radius: 50%; color: #fff; }
+        .video-call-icon { cursor: pointer; display: none; padding: 8px; background: #222; border-radius: 50%; color: #fff; transition: 0.2s; }
         .video-call-icon:active { transform: scale(0.9); background: var(--accent); color: #000; }
 
         #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #08080a; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
@@ -124,7 +123,7 @@
 <div id="lobby-screen">
     <div class="lobby-box">
         <h2>RAJ MODS</h2>
-        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v16.2 | TOUCH FIX</p>
+        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v16.5 | FINAL ENGINE</p>
         <div class="lobby-id-box"><span id="my-lobby-id">Generating Key...</span><button type="button" class="copy-btn" id="copy-action-btn" onclick="copyMyID()">COPY KEY</button></div>
         <input type="text" id="username-input" class="lobby-input" placeholder="Your Name" maxlength="12">
         <input type="text" id="target-id" class="lobby-input" placeholder="Partner's Key (Paste here)">
@@ -208,8 +207,6 @@
     // --- UI HELPERS ---
     function showCustomAlert(title, message) { document.getElementById('custom-alert-title').innerText = title; document.getElementById('custom-alert-text').innerText = message; document.getElementById('custom-alert-overlay').style.display = 'flex'; }
     function closeCustomAlert() { document.getElementById('custom-alert-overlay').style.display = 'none'; }
-    
-    // Keyboard resize fix
     if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { document.body.style.height = window.visualViewport.height + 'px'; const chatBox = document.getElementById('chat-box'); chatBox.scrollTop = chatBox.scrollHeight; });
 
     let peer, myUsername, activeConnections = {}, peerIdToName = {};
@@ -218,7 +215,8 @@
     let activeReplyId = null, editingMsgId = null, selectedMsgIdForAction = null;
 
     const allEmojis = ["❤️","😂","😮","😢","👍","🙏","🔥","🥰","👏","😁","😎","🥳","😡","👎","🎉","💯","✨","💔","💩","👻","👀","🙌","🤔","🤫","🤯","🥶","🤡","👽","🙊","💋"];
-    allEmojis.forEach(e => document.getElementById('emoji-list').innerHTML += `<span class="emoji-btn" onclick="sendReaction('${e}')">${e}</span>`);
+    const emojiListDiv = document.getElementById('emoji-list');
+    allEmojis.forEach(e => emojiListDiv.innerHTML += `<span class="emoji-btn" onclick="sendReaction('${e}')">${e}</span>`);
 
     peer = new Peer({ config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} });
     peer.on('open', id => { document.getElementById('my-lobby-id').innerHTML = `<b style="color:#fff;" id="raw-id">${id}</b>`; });
@@ -346,13 +344,13 @@
         reader.readAsDataURL(file); event.target.value = ""; 
     }
 
-    // --- VOICE MESSAGE RECORDING (FIXED TOUCH) ---
+    // --- VOICE MESSAGE RECORDING (THE FIX) ---
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
 
     async function startRecording(e) {
-        e.preventDefault();
+        e.preventDefault(); // Only prevents default for the Mic Button touch/click
         if(isRecording) return;
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -373,7 +371,7 @@
     }
 
     function stopRecording(e) {
-        // FIX: Removed e.preventDefault() so it doesn't block global clicks
+        // We DO NOT call e.preventDefault() here. This allows all other screen taps to work perfectly!
         if(!isRecording) return;
         if(mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
         isRecording = false;
