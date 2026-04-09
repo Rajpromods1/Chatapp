@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>RAJ MODS | HATKE v12.0</title>
+    <title>RAJ MODS | HATKE v13.0</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --accent: #ff4d4d; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
@@ -66,7 +66,6 @@
         #chat-box { 
             flex: 1; overflow-y: auto; padding: 20px; 
             display: flex; flex-direction: column; gap: 15px; background: #08080a;
-            touch-action: pan-y; /* Important for swipe */
             user-select: none; -webkit-user-select: none;
         }
         #chat-box::-webkit-scrollbar { width: 4px; }
@@ -116,7 +115,7 @@
         .dots span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
 
-        /* Reply Preview Box */
+        /* Reply Preview Box Above Input */
         #reply-preview-box {
             display: none; background: #1a1a1a; border-left: 3px solid var(--accent);
             padding: 10px; font-size: 0.8rem; color: #ccc; border-radius: 8px 8px 0 0;
@@ -161,7 +160,7 @@
         .custom-alert-box p { color: #ddd; font-size: 14px; margin-bottom: 22px; }
         .custom-alert-btn { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        /* Video call elements hidden here for brevity but kept functional */
+        /* Video call elements */
         #video-call-screen { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:3000; flex-direction:column; }
         #remote-video { width:100%; height:100%; object-fit:cover; background:#050505; }
         #local-video { position:absolute; top:40px; right:20px; width:100px; height:150px; object-fit:cover; border-radius:12px; border:2px solid #333; background:#111; }
@@ -180,7 +179,7 @@
 <div id="lobby-screen">
     <div class="lobby-box">
         <h2>RAJ MODS</h2>
-        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v12.0 | SWIPE & EDIT FIX</p>
+        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v13.0 | SOUND & ALERTS</p>
         <div class="lobby-id-box"><span id="my-lobby-id">Generating Key...</span><button type="button" class="copy-btn" id="copy-action-btn" onclick="copyMyID()">COPY KEY</button></div>
         <input type="text" id="username-input" class="lobby-input" placeholder="Your Name" maxlength="12">
         <input type="text" id="target-id" class="lobby-input" placeholder="Partner's Key (Paste here)">
@@ -252,6 +251,38 @@
 
     peer.on('call', (call) => { pendingIncomingCall = call; document.getElementById('caller-name').innerText = `Partner is calling...`; document.getElementById('incoming-call-modal').style.display = 'block'; });
 
+    // --- NOTIFICATION & SOUND LOGIC ---
+    function requestNotificationPermission() {
+        if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+            Notification.requestPermission();
+        }
+    }
+
+    function playNotificationSound() {
+        try {
+            // Using a reliable water drop sound from Google Actions library
+            const audio = new Audio('https://actions.google.com/sounds/v1/water/water_drop.ogg');
+            audio.play().catch(e => console.log("Sound autoplay blocked by browser."));
+        } catch (e) {}
+    }
+
+    function showPushNotification(sender, messageText) {
+        if ("Notification" in window && Notification.permission === "granted") {
+            // Show push notification only if the user is not actively looking at the tab
+            if (document.visibilityState === 'hidden') {
+                const notification = new Notification(`New message from ${sender}`, {
+                    body: messageText,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/1041/1041916.png' // Chat Icon
+                });
+                notification.onclick = function() {
+                    window.focus();
+                    this.close();
+                };
+            }
+        }
+    }
+    // ------------------------------------
+
     function copyMyID() {
         const idText = document.getElementById('raw-id').innerText;
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(idText).then(showCopySuccess).catch(() => fallbackCopy(idText));
@@ -263,6 +294,10 @@
     function startChat() {
         const name = document.getElementById('username-input').value.trim();
         if(!name) return showCustomAlert("Name Required", "Bhai, enter your name before starting!");
+        
+        // Request Permission for Notifications
+        requestNotificationPermission();
+
         myUsername = name.toUpperCase(); const targetId = document.getElementById('target-id').value.trim();
         document.getElementById('lobby-screen').style.display = 'none'; document.getElementById('chat-screen').style.display = 'flex';
         if(targetId && targetId !== peer.id) setupConnection(peer.connect(targetId));
@@ -278,6 +313,11 @@
             if(data.type === 'GHOST_CHAT') {
                 hideTyping(); addMsg(data.name, data.data, 'peer', data.msgId, data.replyObj);
                 conn.send({type: 'DELIVERED', msgId: data.msgId});
+                
+                // Trigger Sound & Push Notification
+                playNotificationSound();
+                showPushNotification(data.name, data.data);
+
                 if (document.visibilityState === 'visible') conn.send({type: 'READ', msgId: data.msgId}); else unreadMessages.push(data.msgId); 
             } 
             else if(data.type === 'HANDSHAKE') { peerIdToName[conn.peer] = data.name; updateCount(); }
@@ -288,7 +328,7 @@
             else if(data.type === 'EDIT') { updateBubbleText(data.msgId, data.text); }
             else if(data.type === 'DELETE') { removeBubbleText(data.msgId); }
             else if(data.type === 'CALL_ENDED') { cleanupCallUI(); } 
-            else if(data.type === 'SYS_REJECT') { showCustomAlert("Connection Rejected", "The room is already locked."); }
+            else if(data.type === 'SYS_REJECT') { showCustomAlert("Connection Rejected", "The room is already locked (2/2 members full)."); }
         });
         conn.on('close', () => { delete activeConnections[conn.peer]; updateCount(); hideTyping(); cleanupCallUI(); });
     }
@@ -310,7 +350,6 @@
     function send() {
         const text = msgInput.value.trim(); if(!text) return;
         
-        // Handle Edit logic
         if (editingMsgId) {
             updateBubbleText(editingMsgId, text);
             Object.values(activeConnections).forEach(c => c.send({type: 'EDIT', msgId: editingMsgId, text: text}));
@@ -349,79 +388,60 @@
         box.appendChild(div); box.scrollTop = box.scrollHeight;
     }
 
-    // --- FIX: ULTIMATE TOUCH ENGINE (Swipe, Tap, Hold) ---
     const chatBox = document.getElementById('chat-box');
-    let tStartX = 0, tStartY = 0, activeBubble = null, isSwiping = false, isLongPress = false, pressTimer;
+    let touchStartX = 0, touchStartY = 0, currentX = 0;
+    let activeBubble = null, isSwiping = false, pressTimer;
 
     chatBox.addEventListener('touchstart', (e) => {
         const bubble = e.target.closest('.msg-bubble'); if(!bubble) return;
-        activeBubble = bubble; tStartX = e.touches[0].clientX; tStartY = e.touches[0].clientY;
-        isSwiping = false; isLongPress = false; activeBubble.style.transition = 'none';
+        activeBubble = bubble;
+        touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; currentX = touchStartX;
+        isSwiping = false; activeBubble.style.transition = 'none';
         
-        // Start Long Press Timer (600ms)
         pressTimer = setTimeout(() => {
-            isLongPress = true;
-            if(navigator.vibrate) navigator.vibrate(40);
-            openMessageActions(bubble.closest('.msg-con').id);
-        }, 600); 
+            if(!isSwiping) openMessageActions(bubble.closest('.msg-con').id);
+        }, 500); 
     }, {passive: true});
 
     chatBox.addEventListener('touchmove', (e) => {
         if(!activeBubble) return;
-        let diffX = e.touches[0].clientX - tStartX; let diffY = Math.abs(e.touches[0].clientY - tStartY);
+        currentX = e.touches[0].clientX;
+        const diffX = currentX - touchStartX; const diffY = Math.abs(e.touches[0].clientY - touchStartY);
 
-        // Cancel Long press if finger moves vertically (Scrolling)
-        if (diffY > 10) clearTimeout(pressTimer); 
-
-        // Swipe Right to Reply
-        if(diffX > 15 && diffX > diffY && !isLongPress) {
+        if(diffX > 15 && diffX > diffY) {
             isSwiping = true; clearTimeout(pressTimer);
-            let moveX = Math.min(diffX, 65); // Lock max swipe distance
+            let moveX = Math.min(diffX, 60); 
             activeBubble.style.transform = `translateX(${moveX}px)`;
-        }
+        } else if (diffY > 15) { clearTimeout(pressTimer); } 
     }, {passive: true});
 
     chatBox.addEventListener('touchend', (e) => {
         clearTimeout(pressTimer);
         if(!activeBubble) return;
         
+        const diffX = currentX - touchStartX;
         const msgId = activeBubble.closest('.msg-con').id.replace('con-', '');
 
-        if(isSwiping) {
-            // Check if swiped far enough
-            let diffX = e.changedTouches[0].clientX - tStartX;
-            if(diffX > 45) initiateReply(msgId, activeBubble);
-            
-            // Snap back
-            activeBubble.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            activeBubble.style.transform = 'translateX(0)';
-        } else if (!isLongPress) {
-            // It was a quick tap
-            let diffX = Math.abs(e.changedTouches[0].clientX - tStartX);
-            let diffY = Math.abs(e.changedTouches[0].clientY - tStartY);
-            
-            if(diffX < 10 && diffY < 10) {
-                // Ignore if clicked on existing reaction badge
-                if(e.target.closest('.reaction-badge') === null) {
-                    openReactionPicker(msgId);
-                }
-            }
+        if(isSwiping && diffX > 40) {
+            initiateReply(msgId, activeBubble);
+        } else if (!isSwiping && e.target.closest('.reaction-badge') === null) {
+            openReactionPicker(msgId);
         }
-        
-        let tempBubble = activeBubble; activeBubble = null;
-        setTimeout(() => { if(tempBubble) tempBubble.style.transition = 'none'; }, 300);
+
+        activeBubble.style.transition = 'transform 0.3s ease';
+        activeBubble.style.transform = 'translateX(0)';
+        setTimeout(() => { if(activeBubble) activeBubble.style.transition = 'none'; activeBubble = null; }, 300);
     });
     chatBox.addEventListener('touchcancel', () => { clearTimeout(pressTimer); if(activeBubble) { activeBubble.style.transform = 'translateX(0)'; activeBubble = null; } });
 
-
-    // --- ACTION HANDLERS ---
     function initiateReply(msgId, bubbleEl) {
-        const textObj = bubbleEl.querySelector('.bubble-text');
-        if(textObj && textObj.innerText === "🚫 This message was deleted") return; 
         activeReplyId = msgId;
         const sender = bubbleEl.closest('.msg-con').querySelector('.msg-info span').innerText;
+        const textObj = bubbleEl.querySelector('.bubble-text');
+        const text = textObj ? textObj.innerText : "🚫 Deleted Message";
+        if(text === "🚫 This message was deleted") return; 
         document.getElementById('reply-preview-name').innerText = sender;
-        document.getElementById('reply-preview-text').innerText = textObj.innerText;
+        document.getElementById('reply-preview-text').innerText = text;
         document.getElementById('reply-preview-box').style.display = 'flex';
         document.getElementById('msg-input').focus();
     }
@@ -430,24 +450,15 @@
     function openMessageActions(fullConId) {
         selectedMsgIdForAction = fullConId.replace('con-', '');
         const isMe = document.getElementById(fullConId).classList.contains('me');
-        const textObj = document.getElementById(`bubble-${selectedMsgIdForAction}`).querySelector('.bubble-text');
-        if(textObj && textObj.innerText === "🚫 This message was deleted") return; 
-
-        // Generate Menu based on sender
-        const menuContainer = document.getElementById('action-btn-container');
         if(isMe) {
+            const textObj = document.getElementById(`bubble-${selectedMsgIdForAction}`).querySelector('.bubble-text');
+            if(textObj && textObj.innerText === "🚫 This message was deleted") return; 
+            const menuContainer = document.getElementById('action-btn-container');
             menuContainer.innerHTML = `
-                <button class="act-btn" onclick="triggerAction('reply')">↩️ Reply</button>
-                <button class="act-btn" onclick="triggerAction('copy')">📋 Copy</button>
-                <button class="act-btn" onclick="triggerAction('edit')">✏️ Edit</button>
-                <button class="act-btn delete" onclick="triggerAction('delete')">🗑️ Delete</button>`;
-        } else {
-            menuContainer.innerHTML = `
-                <button class="act-btn" onclick="triggerAction('reply')">↩️ Reply</button>
-                <button class="act-btn" onclick="triggerAction('copy')">📋 Copy</button>`;
+                <button class="act-btn" onclick="triggerAction('edit')">✏️ Edit Message</button>
+                <button class="act-btn delete" onclick="triggerAction('delete')">🗑️ Delete for Everyone</button>`;
+            document.getElementById('action-menu-overlay').style.display = 'flex'; document.getElementById('dim-bg').style.display = 'block';
         }
-        document.getElementById('action-menu-overlay').style.display = 'flex'; 
-        document.getElementById('dim-bg').style.display = 'block';
     }
 
     function triggerAction(action) {
@@ -456,11 +467,7 @@
         const bubble = document.getElementById(`bubble-${selectedMsgIdForAction}`);
         const rawText = decodeURIComponent(bubble.getAttribute('data-raw-text'));
 
-        if(action === 'reply') {
-            initiateReply(selectedMsgIdForAction, bubble);
-        } else if (action === 'copy') {
-            navigator.clipboard.writeText(rawText).then(()=> showCustomAlert("Copied", "Message copied to clipboard!"));
-        } else if (action === 'edit') {
+        if (action === 'edit') {
             editingMsgId = selectedMsgIdForAction;
             const input = document.getElementById('msg-input'); input.value = rawText; input.focus();
             document.getElementById('send-icon').innerHTML = `<polyline points="20 6 9 17 4 12"></polyline>`;
