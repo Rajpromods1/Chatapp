@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>RAJ MODS | HATKE v16.5</title>
+    <title>RAJ MODS | HATKE v17.0</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --accent: #ff4d4d; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
@@ -41,13 +41,18 @@
         .me .msg-bubble-wrapper { justify-content: flex-end; }
         .peer .msg-bubble-wrapper { justify-content: flex-start; }
 
+        /* Bubble Styles */
         .msg-bubble { padding: 10px 14px; border-radius: 18px; font-size: 0.95rem; word-wrap: break-word; position: relative; will-change: transform; transition: transform 0.2s ease-out; }
         .me .msg-bubble { background: var(--accent); color: #000; border-bottom-right-radius: 2px; }
         .peer .msg-bubble { background: #1e1e22; color: #fff; border-bottom-left-radius: 2px; border: 1px solid #333; }
         
-        .msg-bubble.media-bubble { padding: 4px; background: transparent; border: none; }
+        /* Media Specific Bubbles */
+        .msg-bubble.media-bubble { padding: 4px; background: transparent !important; border: none !important; }
         .media-bubble img, .media-bubble video { border-radius: 14px; max-width: 240px; display: block; object-fit: cover; max-height: 300px; }
-        .msg-bubble audio { width: 220px; height: 45px; margin-top: 2px; outline: none; border-radius: 20px; }
+        
+        .msg-bubble.audio-bubble { padding: 0; background: transparent !important; border: none !important; }
+        .audio-bubble audio { height: 45px; max-width: 220px; outline: none; border-radius: 30px; background: #e0e0e0; }
+        .me .audio-bubble audio { background: var(--accent); }
 
         .quoted-msg { background: rgba(0,0,0,0.15); border-left: 3px solid #000; padding: 5px 8px; border-radius: 6px; margin-bottom: 5px; font-size: 0.8rem; opacity: 0.8; }
         .peer .quoted-msg { background: rgba(255,255,255,0.05); border-left-color: var(--accent); }
@@ -83,13 +88,16 @@
         #reply-preview-box { display: none; background: #1a1a1a; border-left: 3px solid var(--accent); padding: 10px; font-size: 0.8rem; color: #ccc; border-radius: 8px 8px 0 0; position: relative; justify-content: space-between; align-items: center; }
         .close-reply { cursor: pointer; font-size: 16px; color: #888; padding: 0 10px; }
 
-        /* --- POPUPS --- */
-        #reaction-overlay, #action-menu-overlay { display: none; position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: rgba(20,20,20,0.95); backdrop-filter: blur(10px); padding: 15px; border-radius: 20px; border: 1px solid #333; z-index: 2000; box-shadow: 0 5px 20px rgba(0,0,0,0.8); width: 90%; max-width: 320px; flex-direction: column; animation: popUp 0.2s ease-out; }
+        /* --- WHATSAPP STYLE COMBINED ACTION MENU --- */
+        #action-menu-overlay { display: none; position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: rgba(20,20,20,0.95); backdrop-filter: blur(10px); padding: 15px; border-radius: 20px; border: 1px solid #333; z-index: 2000; box-shadow: 0 5px 20px rgba(0,0,0,0.8); width: 90%; max-width: 320px; flex-direction: column; animation: popUp 0.2s ease-out; }
         @keyframes popUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
-        .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; max-height: 180px; overflow-y: auto; text-align: center; }
-        .emoji-btn { font-size: 24px; cursor: pointer; transition: 0.2s; }
+        
+        .emoji-row { display: flex; justify-content: space-between; background: #222; padding: 12px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #444;}
+        .emoji-btn { font-size: 26px; cursor: pointer; transition: 0.2s; user-select: none; }
+        .emoji-btn:active { transform: scale(1.3); }
+        
         .action-btn-row { display: flex; flex-direction: column; gap: 10px; }
-        .act-btn { padding: 12px; background: #222; color: #fff; border: 1px solid #444; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .act-btn { padding: 12px; background: #222; color: #fff; border: 1px solid #444; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; text-align: left; padding-left: 20px;}
         .act-btn.delete { color: var(--accent); border-color: rgba(255,77,77,0.3); }
 
         #dim-bg { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: transparent; z-index: 1999; }
@@ -123,7 +131,7 @@
 <div id="lobby-screen">
     <div class="lobby-box">
         <h2>RAJ MODS</h2>
-        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v16.5 | FINAL ENGINE</p>
+        <p style="color:#666; font-size: 11px; margin-bottom: 15px;">HATKE APP v17.0 | WHATSAPP CLONE</p>
         <div class="lobby-id-box"><span id="my-lobby-id">Generating Key...</span><button type="button" class="copy-btn" id="copy-action-btn" onclick="copyMyID()">COPY KEY</button></div>
         <input type="text" id="username-input" class="lobby-input" placeholder="Your Name" maxlength="12">
         <input type="text" id="target-id" class="lobby-input" placeholder="Partner's Key (Paste here)">
@@ -169,8 +177,18 @@
 </div>
 
 <div id="dim-bg" onclick="closePopups()"></div>
-<div id="reaction-overlay"><div class="emoji-grid" id="emoji-list"></div></div>
-<div id="action-menu-overlay"><div class="action-btn-row" id="action-btn-container"></div></div>
+
+<div id="action-menu-overlay">
+    <div class="emoji-row">
+        <span class="emoji-btn" onclick="sendReaction('❤️')">❤️</span>
+        <span class="emoji-btn" onclick="sendReaction('😂')">😂</span>
+        <span class="emoji-btn" onclick="sendReaction('😮')">😮</span>
+        <span class="emoji-btn" onclick="sendReaction('😢')">😢</span>
+        <span class="emoji-btn" onclick="sendReaction('🙏')">🙏</span>
+        <span class="emoji-btn" onclick="sendReaction('👍')">👍</span>
+    </div>
+    <div class="action-btn-row" id="action-btn-container"></div>
+</div>
 
 <div id="video-call-screen">
     <video id="remote-video" autoplay playsinline></video>
@@ -214,13 +232,8 @@
     let localStream = null, currentCall = null, pendingIncomingCall = null;
     let activeReplyId = null, editingMsgId = null, selectedMsgIdForAction = null;
 
-    const allEmojis = ["❤️","😂","😮","😢","👍","🙏","🔥","🥰","👏","😁","😎","🥳","😡","👎","🎉","💯","✨","💔","💩","👻","👀","🙌","🤔","🤫","🤯","🥶","🤡","👽","🙊","💋"];
-    const emojiListDiv = document.getElementById('emoji-list');
-    allEmojis.forEach(e => emojiListDiv.innerHTML += `<span class="emoji-btn" onclick="sendReaction('${e}')">${e}</span>`);
-
     peer = new Peer({ config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} });
     peer.on('open', id => { document.getElementById('my-lobby-id').innerHTML = `<b style="color:#fff;" id="raw-id">${id}</b>`; });
-    
     peer.on('connection', (conn) => { setupConnection(conn); });
     peer.on('call', (call) => { pendingIncomingCall = call; document.getElementById('caller-name').innerText = `Partner is calling...`; document.getElementById('incoming-call-modal').style.display = 'block'; });
 
@@ -268,7 +281,17 @@
         });
         conn.on('data', (data) => {
             if(data.type === 'GHOST_CHAT') {
-                hideTyping(); addMsg(data.name, data.data, 'peer', data.msgId, data.replyObj, data.msgType);
+                hideTyping(); 
+                
+                // MEDIA TYPE FALLBACK FIX
+                let rType = data.msgType || 'text';
+                if(typeof data.data === 'string') {
+                    if(data.data.startsWith('data:image')) rType = 'image';
+                    if(data.data.startsWith('data:video')) rType = 'video';
+                    if(data.data.startsWith('data:audio')) rType = 'audio';
+                }
+
+                addMsg(data.name, data.data, 'peer', data.msgId, data.replyObj, rType);
                 conn.send({type: 'DELIVERED', msgId: data.msgId});
                 playNotificationSound(); showPushNotification(data.name, data.data);
                 if (document.visibilityState === 'visible') conn.send({type: 'READ', msgId: data.msgId}); else unreadMessages.push(data.msgId); 
@@ -344,13 +367,16 @@
         reader.readAsDataURL(file); event.target.value = ""; 
     }
 
-    // --- VOICE MESSAGE RECORDING (THE FIX) ---
+    // --- VOICE MESSAGE RECORDING ---
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
 
     async function startRecording(e) {
-        e.preventDefault(); // Only prevents default for the Mic Button touch/click
+        if(e.type === 'touchstart' || e.type === 'mousedown') {
+            // Only prevent default on the element so scrolling the chat still works
+            e.stopPropagation(); 
+        }
         if(isRecording) return;
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -371,7 +397,6 @@
     }
 
     function stopRecording(e) {
-        // We DO NOT call e.preventDefault() here. This allows all other screen taps to work perfectly!
         if(!isRecording) return;
         if(mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
         isRecording = false;
@@ -393,7 +418,7 @@
         let contentHTML = ''; let extraClass = '';
         if (msgType === 'image') { contentHTML = `<img src="${data}" onclick="openFullscreen(this.src)">`; extraClass = 'media-bubble'; } 
         else if (msgType === 'video') { contentHTML = `<video src="${data}" controls></video>`; extraClass = 'media-bubble'; } 
-        else if (msgType === 'audio') { contentHTML = `<audio src="${data}" controls></audio>`; } 
+        else if (msgType === 'audio') { contentHTML = `<audio src="${data}" controls></audio>`; extraClass = 'audio-bubble';} 
         else { contentHTML = `<span class="bubble-text">${data}</span>`; }
 
         const safeText = msgType === 'text' ? data : (msgType === 'audio' ? '🎤 Voice Message' : '📷 Media');
@@ -424,7 +449,7 @@
         w.document.write(`<body style="margin:0;background:#000;display:flex;justify-content:center;align-items:center;"><img src="${src}" style="max-width:100%;max-height:100vh;"></body>`);
     }
 
-    // --- TOUCH & SWIPE ---
+    // --- TOUCH, SWIPE & LONG PRESS (COMBINED MENU) ---
     const chatBox = document.getElementById('chat-box');
     let tStartX = 0, tStartY = 0, currentX = 0;
     let activeBubble = null, isSwiping = false, pressTimer;
@@ -436,6 +461,7 @@
         activeBubble = bubble; touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; currentX = touchStartX;
         isSwiping = false; activeBubble.style.transition = 'none';
         
+        // 500ms LONG PRESS triggers Combined Action Menu
         pressTimer = setTimeout(() => { openMessageActions(bubble.closest('.msg-con').id); }, 500); 
     }, {passive: true});
 
@@ -455,10 +481,9 @@
         
         const diffX = currentX - touchStartX; const msgId = activeBubble.closest('.msg-con').id.replace('con-', '');
 
+        // Swiped far enough
         if(isSwiping && diffX > 40) {
             initiateReply(msgId, activeBubble);
-        } else if (!isSwiping && e.target.closest('.reaction-badge') === null && e.target.tagName !== 'IMG') {
-            openReactionPicker(msgId);
         }
 
         activeBubble.style.transition = 'transform 0.3s ease'; activeBubble.style.transform = 'translateX(0)';
@@ -477,7 +502,7 @@
     }
     function cancelReply() { activeReplyId = null; document.getElementById('reply-preview-box').style.display = 'none'; }
 
-    // --- EDIT / DELETE ACTIONS ---
+    // --- COMBINED ACTION MENU (Reactions + Edit/Delete) ---
     function openMessageActions(fullConId) {
         selectedMsgIdForAction = fullConId.replace('con-', '');
         const isMe = document.getElementById(fullConId).classList.contains('me');
@@ -489,9 +514,14 @@
         let editBtn = text !== '📷 Media' && text !== '🎤 Voice Message' ? `<button class="act-btn" onclick="triggerAction('edit')">✏️ Edit Message</button>` : '';
 
         if(isMe) {
-            menuContainer.innerHTML = `${editBtn}<button class="act-btn delete" onclick="triggerAction('delete')">🗑️ Delete for Everyone</button>`;
-            document.getElementById('action-menu-overlay').style.display = 'flex'; document.getElementById('dim-bg').style.display = 'block';
+            menuContainer.innerHTML = `
+                <button class="act-btn" onclick="triggerAction('reply')">↩️ Reply</button>
+                ${editBtn}
+                <button class="act-btn delete" onclick="triggerAction('delete')">🗑️ Delete for Everyone</button>`;
+        } else {
+            menuContainer.innerHTML = `<button class="act-btn" onclick="triggerAction('reply')">↩️ Reply</button>`;
         }
+        document.getElementById('action-menu-overlay').style.display = 'flex'; document.getElementById('dim-bg').style.display = 'block';
     }
 
     function triggerAction(action) {
@@ -499,7 +529,9 @@
         const bubble = document.getElementById(`bubble-${selectedMsgIdForAction}`);
         const rawText = decodeURIComponent(bubble.getAttribute('data-raw-text'));
 
-        if (action === 'edit') {
+        if (action === 'reply') {
+            initiateReply(selectedMsgIdForAction, bubble);
+        } else if (action === 'edit') {
             editingMsgId = selectedMsgIdForAction;
             const input = document.getElementById('msg-input'); input.value = rawText; input.focus();
             document.getElementById('send-icon').innerHTML = `<polyline points="20 6 9 17 4 12"></polyline>`;
@@ -526,16 +558,12 @@
             document.getElementById(`edit-tag-${msgId}`).innerText = "";
             bubble.setAttribute('data-raw-text', encodeURIComponent("🚫 This message was deleted"));
             bubble.classList.remove("media-bubble"); 
+            bubble.classList.remove("audio-bubble");
         }
     }
 
     // --- REACTIONS ---
-    function openReactionPicker(msgId) {
-        const text = decodeURIComponent(document.getElementById(`bubble-${msgId}`).getAttribute('data-raw-text'));
-        if(text === "🚫 This message was deleted") return;
-        selectedMsgIdForAction = msgId; document.getElementById('reaction-overlay').style.display = 'flex'; document.getElementById('dim-bg').style.display = 'block';
-    }
-    function closePopups() { document.getElementById('reaction-overlay').style.display = 'none'; document.getElementById('action-menu-overlay').style.display = 'none'; document.getElementById('dim-bg').style.display = 'none'; selectedMsgIdForAction = null; }
+    function closePopups() { document.getElementById('action-menu-overlay').style.display = 'none'; document.getElementById('dim-bg').style.display = 'none'; selectedMsgIdForAction = null; }
     function sendReaction(emoji) {
         if(!selectedMsgIdForAction) return; updateReactionUI(selectedMsgIdForAction, myUsername, emoji);
         Object.values(activeConnections).forEach(c => c.send({type: 'REACTION', msgId: selectedMsgIdForAction, emoji: emoji, name: myUsername})); closePopups();
